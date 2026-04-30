@@ -3,84 +3,104 @@ import numpy as np
 import plotly.graph_objects as go
 import time
 
-# 1. إعدادات المسرح (Cinematic Stage)
-st.set_page_config(page_title="JANA-SI: Virtual Lab", layout="wide")
+# 1. تهيئة البيئة السينمائية (The Dark Theater)
+st.set_page_config(page_title="JANA-SI | Digital Twin", layout="wide")
 st.markdown("""
     <style>
-    .main { background-color: #05070a; color: #e0e0e0; }
-    .stMetric { background-color: #161b22; border-radius: 10px; padding: 15px; border: 1px solid #30363d; }
+    .main { background-color: #000000; color: #00ffcc; }
+    .stButton>button { width: 100%; border-radius: 20px; background: linear-gradient(45deg, #FFD700, #FF8C00); color: black; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🧬 JANA-SI: Full In-Silico Sequence")
-st.write("---")
+st.title("🛡️ JANA-SI: The Reprogramming Journey")
+st.sidebar.markdown("### 🛠️ Lab Console")
 
-# القائمة الجانبية للتحكم الإبداعي
-st.sidebar.header("🕹️ Simulation Engine")
-mode = st.sidebar.radio("Select Phase:", ["1. Bioelectric Mapping", "2. Swarm Deployment", "3. Final Reprogramming"])
-intensity = st.sidebar.slider("Bioelectric Signal Intensity", 0.0, 2.0, 1.2)
+# متغيرات تحكم تفاعلية
+swarm_density = st.sidebar.slider("MENPs Density", 50, 200, 120)
+auto_rotate = st.sidebar.checkbox("Auto-Rotate Camera", True)
 
-# مكان العرض الرئيسي
+# حاويات العرض
 view_port = st.empty()
+status_text = st.empty()
 
-# دالة لرسم الورم بشكل "حقيقي" و "مبهر"
-def draw_scene(px, py, pz, phase_color, tumor_opac, glow=False):
+# دالة بناء العالم (The 3D World)
+def render_frame(p_coords, tumor_color, tumor_opac, glow_size, stage_name):
     fig = go.Figure()
-    
-    # رسم "الورم" بشكل خلية معقدة (Mesh3d)
-    u = np.linspace(0, 2*np.pi, 30)
-    v = np.linspace(0, np.pi, 30)
-    tx = 20 + 7 * np.outer(np.cos(u), np.sin(v))
-    ty = 20 + 7 * np.outer(np.sin(u), np.sin(v))
-    tz = 20 + 7 * np.outer(np.ones(np.size(u)), np.cos(v))
-    
-    fig.add_trace(go.Surface(x=tx, y=ty, z=tz, colorscale='Reds', opacity=tumor_opac, showscale=False, name="Malignant Site"))
 
-    # رسم الأسراب (الجسيمات) بألوان نيون متوهجة
+    # رسم الورم ككتلة حيوية معقدة (Voxel-based)
+    u, v = np.mgrid[0:2*np.pi:30j, 0:np.pi:20j]
+    tx = 20 + 8 * np.cos(u) * np.sin(v)
+    ty = 20 + 8 * np.sin(u) * np.sin(v)
+    tz = 20 + 8 * np.cos(v)
+    
+    fig.add_trace(go.Mesh3d(x=tx.flatten(), y=ty.flatten(), z=tz.flatten(), 
+                            alphahull=0, color=tumor_color, opacity=tumor_opac, 
+                            name="Malignant Core", intensity=10))
+
+    # رسم الأسراب الذهبية بتأثير النيون
     fig.add_trace(go.Scatter3d(
-        x=px, y=py, z=pz, mode='markers',
-        marker=dict(size=5, color=phase_color, symbol='diamond', 
+        x=p_coords[0], y=p_coords[1], z=p_coords[2],
+        mode='markers',
+        marker=dict(size=glow_size, color='#FFD700', symbol='diamond', 
                     line=dict(width=1, color='white'), opacity=0.9),
-        name="JANA-SI MENPs"
+        name="MENPs Swarm"
     ))
 
-    # إعدادات الكاميرا والبيئة السوداء
+    # إعدادات الإضاءة والكاميرا الاحترافية
     fig.update_layout(
-        scene=dict(xaxis_visible=False, yaxis_visible=False, zaxis_visible=False,
-                   bgcolor="#05070a", camera=dict(eye=dict(x=1.5, y=1.5, z=1.5))),
-        margin=dict(l=0, r=0, b=0, t=0), paper_bgcolor="#05070a"
+        scene=dict(
+            xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False),
+            bgcolor="black",
+            camera=dict(eye=dict(x=1.6, y=1.6, z=1.2)),
+            aspectmode='cube'
+        ),
+        margin=dict(l=0, r=0, b=0, t=0),
+        paper_bgcolor="black",
+        showlegend=False
     )
     return fig
 
-# تنفيذ المراحل الثلاث
-if mode == "1. Bioelectric Mapping":
-    st.subheader("🔍 Phase 1: Detecting Malignant Signatures")
-    st.info("Searching for cells with V_mem ≈ -20mV...")
-    # جسيمات تستكشف المكان بشكل عشوائي
-    px, py, pz = np.random.uniform(0, 40, 60), np.random.uniform(0, 40, 60), np.random.uniform(0, 40, 60)
-    view_port.plotly_chart(draw_scene(px, py, pz, 'cyan', 0.1), use_container_width=True)
+# بدء "الفيلم" التعليمي
+if st.sidebar.button("🚀 Start Full Clinical Sequence"):
+    # المرحلة 1: الحقن والانتشار (Scanning)
+    status_text.warning("📡 PHASE 1: Systemic Injection & Bioelectric Mapping...")
+    px, py, pz = np.random.uniform(0, 40, swarm_density), np.random.uniform(0, 5, swarm_density), np.random.uniform(0, 40, swarm_density)
+    
+    for i in range(15):
+        px += np.random.normal(0, 1, swarm_density)
+        py += 1.5 + np.random.normal(0, 0.5, swarm_density)
+        view_port.plotly_chart(render_frame([px, py, pz], 'red', 0.1, 3, "Scanning"), use_container_width=True)
+        time.sleep(0.05)
 
-elif mode == "2. Swarm Deployment":
-    st.subheader("🚀 Phase 2: BASS-MIM Navigation Sequence")
-    if st.button("Execute Swarm Jump"):
-        px, py, pz = np.random.uniform(0, 10, 80), np.random.uniform(0, 10, 80), np.random.uniform(0, 10, 80)
-        for i in range(25):
-            px += (20 - px) * 0.15 + np.random.normal(0, 1, 80)
-            py += (20 - py) * 0.15 + np.random.normal(0, 1, 80)
-            pz += (20 - pz) * 0.15 + np.random.normal(0, 1, 80)
-            view_port.plotly_chart(draw_scene(px, py, pz, 'gold', 0.2), use_container_width=True)
-            time.sleep(0.05)
-        st.success("Target Locked: Swarm localized at tumor site.")
+    # المرحلة 2: هجوم الأسراب (BASS-MIM Locking)
+    status_text.error("🎯 PHASE 2: BASS-MIM Algorithm Engaged. Targeting Depolarized Cells (-20mV)...")
+    for i in range(25):
+        px += (20 - px) * 0.2 + np.random.normal(0, 0.8, swarm_density)
+        py += (20 - py) * 0.2 + np.random.normal(0, 0.8, swarm_density)
+        pz += (20 - pz) * 0.2 + np.random.normal(0, 0.8, swarm_density)
+        view_port.plotly_chart(render_frame([px, py, pz], '#ff4b4b', 0.3, 5, "Targeting"), use_container_width=True)
+        time.sleep(0.04)
 
-elif mode == "3. Final Reprogramming":
-    st.subheader("✨ Phase 3: Cellular Normalization (The Miracle)")
-    # الجسيمات داخل الورم واللون يتحول للأخضر (دليل الشفاء)
-    px, py, pz = np.random.normal(20, 3, 100), np.random.normal(20, 3, 100), np.random.normal(20, 3, 100)
-    view_port.plotly_chart(draw_scene(px, py, pz, '#00ff00', 0.5), use_container_width=True)
+    # المرحلة 3: إعادة البرمجة (Reprogramming Miracle)
+    status_text.success("✨ PHASE 3: Normalizing Bioelectric Potential. Cellular Homeostasis Restored.")
+    for i in range(10):
+        # تأثير توهج أخضر عند الشفاء
+        view_port.plotly_chart(render_frame([px, py, pz], '#00ff00', 0.6, 7, "Healing"), use_container_width=True)
+        time.sleep(0.1)
+    
     st.balloons()
+    
+    # عرض النتائج النهائية بشكل مبهر
     st.write("---")
-    # عرض الأرقام القوية من بحثك
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Targeting Score (TES)", "2.76", "+253.8%")
-    col2.metric("Elimination Rate", "100%", "Absolute")
-    col3.metric("Healthy Tissue Safety", "71.4%", "+49.6%")
+    cols = st.columns(3)
+    cols[0].metric("Targeting Efficiency", "2.76", "+253.8%")
+    cols[1].metric("Healthy Tissue Safety", "71.4%", "+49.6%")
+    cols[2].metric("Elimination Rate", "100%", "Absolute")
+    
+    st.markdown("### 📝 Researcher's Note:")
+    st.info("JANA-SI successfully restored the 'Cognitive Glue' of the cell collective, moving from the Destruction Paradigm to the Reprogramming Paradigm.")
+
+else:
+    st.markdown("### ⬅️ Waiting for Execution Command")
+    st.image("https://img.icons8.com/nolan/512/microscope.png", width=100)
+    st.write("Click the button in the sidebar to run the full simulation sequence.")
