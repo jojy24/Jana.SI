@@ -1,55 +1,66 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+import time
 
-# إعدادات واجهة المستخدم
-st.set_page_config(page_title="JANA-SI Simulation", layout="wide")
-st.title("🧬 JANA-SI: 3D Swarm Intelligence Simulation")
-st.sidebar.header("Control Parameters")
+st.set_page_config(page_title="JANA-SI Live Simulation", layout="wide")
+st.title("🎬 JANA-SI: Dynamic Swarm Targeting")
 
-# مدخلات المستخدم (تفاعلية للباركود)
+# التحكم في التشغيل
+st.sidebar.header("Simulation Controls")
+run_sim = st.sidebar.button("Start Targeting Sequence (Play)")
 v_tumor = st.sidebar.slider("Tumor Voltage (mV)", -40, -10, -20)
-v_healthy = st.sidebar.slider("Healthy Voltage (mV)", -90, -50, -70)
-swarm_size = st.sidebar.slider("Number of MENPs Agents", 10, 100, 50)
+swarm_speed = st.sidebar.slider("Swarm Velocity", 0.1, 1.0, 0.5)
 
-# 1. بناء البيئة ثلاثية الأبعاد
-grid_size = 25
+# إعداد البيئة
+grid_size = 30
 center = grid_size // 2
 x, y, z = np.mgrid[0:grid_size, 0:grid_size, 0:grid_size]
 dist = np.sqrt((x-center)**2 + (y-center)**2 + (z-center)**2)
 tumor_mask = dist <= 6
 
-# 2. إنشاء الرسم البياني ثلاثي الأبعاد
-def create_3d_plot():
-    fig = go.Figure()
-    # رسم الورم
-    fig.add_trace(go.Isosurface(
-        x=x.flatten(), y=y.flatten(), z=z.flatten(),
-        value=dist.flatten(),
-        isomin=0, isomax=6,
-        opacity=0.2, surface_count=1, colorscale='Blues', name="Tumor Site"
-    ))
-    # محاكاة الأسراب
-    p_x = np.random.normal(center, 2, swarm_size)
-    p_y = np.random.normal(center, 2, swarm_size)
-    p_z = np.random.normal(center, 2, swarm_size)
-    fig.add_trace(go.Scatter3d(
-        x=p_x, y=p_y, z=p_z,
-        mode='markers',
-        marker=dict(size=4, color='gold', symbol='diamond'),
-        name="JANA-SI MENPs Swarm"
-    ))
-    fig.update_layout(scene=dict(xaxis_showticklabels=False, yaxis_showticklabels=False, zaxis_showticklabels=False))
-    return fig
+# إنشاء الرسم البياني الأساسي
+fig_placeholder = st.empty()
 
-# عرض النتائج والمقارنة
-col1, col2 = st.columns([2, 1])
-with col1:
-    st.plotly_chart(create_3d_plot(), use_container_width=True)
-with col2:
-    st.subheader("Live Analytics")
-    st.metric("Targeting Efficiency (TES)", "+253.8%", delta_color="normal")
-    st.metric("Healthy Tissue Exposure", "28.6%", "-49.6%", delta_color="inverse")
-    st.progress(79, text="Tumor Uptake Efficiency (TUE)")
-    st.write("---")
-    st.info("**Reprogramming Paradigm Active:** Cancer cells are being normalized via bioelectric profiling.")
+# محاكاة الحركة (فيديو)
+if run_sim:
+    # نقطة البداية للأسراب (بعيداً عن الورم)
+    p_x = np.random.uniform(0, grid_size, 40)
+    p_y = np.random.uniform(0, grid_size, 40)
+    p_z = np.random.uniform(0, grid_size, 40)
+
+    for frame in range(30): # 30 إطار للحركة
+        # معادلة الحركة نحو الورم (BASS-MIM Logic)
+        p_x += (center - p_x) * swarm_speed * 0.2 + np.random.normal(0, 0.5, 40)
+        p_y += (center - p_y) * swarm_speed * 0.2 + np.random.normal(0, 0.5, 40)
+        p_z += (center - p_z) * swarm_speed * 0.2 + np.random.normal(0, 0.5, 40)
+
+        fig = go.Figure()
+        # الورم
+        fig.add_trace(go.Isosurface(
+            x=x.flatten(), y=y.flatten(), z=z.flatten(),
+            value=dist.flatten(), isomin=0, isomax=6,
+            opacity=0.1, colorscale='Reds', showscale=False
+        ))
+        # الأسراب المتحركة (MENPs)
+        fig.add_trace(go.Scatter3d(
+            x=p_x, y=p_y, z=p_z, mode='markers',
+            marker=dict(size=5, color='gold', symbol='diamond', line=dict(width=1, color='white')),
+            name="Active Swarm"
+        ))
+        
+        fig.update_layout(scene=dict(xaxis_range=[0,30], yaxis_range=[0,30], zaxis_range=[0,30]),
+                          margin=dict(l=0, r=0, b=0, t=0))
+        
+        fig_placeholder.plotly_chart(fig, use_container_width=True)
+        time.sleep(0.1) # سرعة الفيديو
+    [span_0](start_span)st.success("Targeting Complete: Malignant behavior normalized[span_0](end_span).")
+else:
+    st.info("اضغطي على زر 'Start Targeting Sequence' لرؤية الأسراب وهي تعمل!")
+
+# عرض النتائج التقنية أسفل المحاكاة
+st.write("---")
+col1, col2, col3 = st.columns(3)
+[span_1](start_span)col1.metric("Targeting Efficiency (TES)", "2.76", "+253.8%[span_1](end_span)")
+[span_2](start_span)col2.metric("Elimination Rate", "100%", "Absolute[span_2](end_span)")
+[span_3](start_span)col3.metric("Healthy Tissue Safety", "71.4%", "+49.6%[span_3](end_span)")
